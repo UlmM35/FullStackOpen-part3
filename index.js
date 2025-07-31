@@ -5,8 +5,6 @@ const Person = require('./models/person')
 
 const app = express()
 
-let persons = []
-
 app.use(express.json())
 app.use(express.static('dist'))
 
@@ -31,14 +29,9 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    const person = persons.find((person) => person.id === id)
-
-    if (person) {
+    Person.findById(request.params.id).then(person => {
         response.json(person)
-    } else {
-        response.status(404).end()
-    }
+    })
 })
 
 const generateId = () => {
@@ -54,14 +47,15 @@ app.post('/api/persons', (request, response) => {
     } else if (persons.some(person => person.name === body.name)) {
         return response.status(403).json({error: 'name must be unique'})
     }
-    const person = {
+    const person = new Person({
         id: generateId(),
         name: body.name,
         number: body.number
-    }
+    })
 
-    persons = persons.concat(person)
-    response.json(person)
+    person.save().then(savedPerson => {
+        response.json(savedPerson)
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
