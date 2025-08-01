@@ -8,11 +8,11 @@ const app = express()
 app.use(express.static('dist'))
 app.use(express.json())
 
-morgan.token('type', (req, res) => {
-    return `${JSON.stringify(req.body)}`
+morgan.token('type', (request, respone) => {
+    return `${JSON.stringify(request.body)}`
 })
 
-app.use(morgan(':method :url :status :response-time :req[head] :type'))
+app.use(morgan(':method :url :status :response-time ms :req[header] :type'))
 
 app.get('/api/persons', (request, response) => {
     Person.find({}).then(persons => {
@@ -22,11 +22,9 @@ app.get('/api/persons', (request, response) => {
 
 
 app.get('/info', (request, response) => {
-    response.send(`
-        <div>
-            <div>Phonebook has info for ${persons.length}</div>
-            <div>${new Date()}</div>
-        </div>`)
+    Person.estimatedDocumentCount({}).then(count => {
+            response.send(`<div>Phonebook has info for ${count}</div>${new Date()}`)
+    })
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
@@ -51,6 +49,18 @@ app.post('/api/persons', (request, response) => {
 
     if (!body.name || !body.number) {
         return response.status(400).json({error: 'content missing'})
+    } else if (Person.find({ name: body.name})) {
+        app.put('/api/persons/:id', (req, res) => {
+
+            Person.findById(request.params.id)
+                .then(person => {
+                    person.number = body.number
+                })
+
+                return person.save().then((updatedPerson) => {
+                    response.json(updatedPerson)
+                })
+        })
     }
     
     const person = new Person({
@@ -102,7 +112,8 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformatted id'})
-    }
+    } else if (error.name === 'ValidationError')
+        return response.status(403).send({ error: 'invalid/empty info' })
 
     next(error)
 }
