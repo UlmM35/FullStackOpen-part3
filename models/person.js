@@ -37,7 +37,7 @@ const personSchema = new mongoose.Schema({
     minLength: 8,
     validate: {
       validator: numChecker,
-      message: 'Number has to be seperated by -, must not include letters and finally, the first part can have either two or three numbers and the second part has to also consist of numbers'
+      message: 'Number has to be seperated by - (no more than 1), must not include letters and finally, the first part can have either two or three numbers and the second part has to also consist of numbers'
     },
     required: true
   }
