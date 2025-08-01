@@ -6,7 +6,7 @@ mongoose.set('runValidators', true)
 const url = process.env.MONGODB_URI
 
 mongoose.connect(url)
-  .then(result => {
+  .then(() => {
     console.log('connected to MongoDB')
   })
   .catch(error => {
@@ -15,13 +15,13 @@ mongoose.connect(url)
 
 const numChecker = (number) => {
   if (!(number.includes('-')) || number.includes('abcdefghijklmnopqrstuvwxyz')) {
-      return false
+    return false
   } else if ((number.split('').filter(x => x === '-').length > 1)) {
-      return false
+    return false
   }
   const array = number.split('-')
   if ((array[0].length === 2 || array[0].length === 3)) {
-      return true
+    return true
   }
   return false
 }
@@ -44,11 +44,11 @@ const personSchema = new mongoose.Schema({
 })
 
 personSchema.set('toJSON', {
-    transform: (document, returnedObject) => {
-        returnedObject.id = returnedObject._id.toString()
-        delete returnedObject._id
-        delete returnedObject.__v
-    }
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
 })
 
 
